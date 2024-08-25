@@ -246,6 +246,7 @@ class PermaTestModal extends Modal {
 
 		const question = this.questions[this.currentQuestion];
 		const questionEl = contentEl.createEl('div', {cls: 'perma-question'});
+		questionEl.createEl('div', {text: `${this.currentQuestion + 1} / ${this.questions.length}`, cls: 'perma-question-number'});
 		questionEl.createEl('h1', {text: question.text});
 
 		const answerContainer = contentEl.createEl('div', {cls: 'perma-answer-container'});

@@ -2,6 +2,12 @@
     margin-bottom: 20px;
 }
 
+.perma-question-number {
+    font-size: 0.9em;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+}
+
 .perma-question h1 {
     font-size: 1.5em;
     margin-bottom: 15px;
