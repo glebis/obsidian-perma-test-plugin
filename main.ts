@@ -19,6 +19,8 @@ export default class PermaPlugin extends Plugin {
 	settings: PermaPluginSettings;
 
 	async onload() {
+		// Add this line at the beginning of the onload method
+		(this.app as any).plugins.plugins['perma-profiler'] = this;
 		await this.loadSettings();
 
 		// Add ribbon icon
@@ -124,10 +126,59 @@ class PermaTestModal extends Modal {
 		}
 	}
 
-	private finishTest() {
-		// TODO: Implement scoring and result generation
-		new Notice('Test completed! Results will be generated soon.');
+	private async finishTest() {
+		// Calculate scores
+		const scores = this.calculateScores();
+		
+		// Generate result content
+		const content = this.generateResultContent(scores);
+		
+		// Create and open the new note
+		const fileName = this.generateFileName();
+		const file = await this.createResultNote(fileName, content);
+		
+		// Open the newly created note
+		this.app.workspace.activeLeaf.openFile(file);
+		
+		new Notice('Test completed! Results have been generated and opened.');
 		this.close();
+	}
+
+	private calculateScores() {
+		// TODO: Implement actual scoring logic
+		return {
+			P: 5, E: 5, R: 5, M: 5, A: 5
+		};
+	}
+
+	private generateResultContent(scores: Record<string, number>) {
+		const plugin = this.app.plugins.plugins['perma-profiler'] as PermaPlugin;
+		let content = plugin.settings.resultTemplate;
+		
+		const date = new Date().toISOString().split('T')[0];
+		content = content.replace('{{date}}', date);
+		
+		for (const [key, value] of Object.entries(scores)) {
+			content = content.replace(`{{score_${key}}}`, value.toString());
+		}
+		
+		// TODO: Generate interpretations
+		content = content.replace('{{interpretations}}', 'Interpretations to be implemented.');
+		
+		return content;
+	}
+
+	private generateFileName() {
+		const plugin = this.app.plugins.plugins['perma-profiler'] as PermaPlugin;
+		const date = new Date().toISOString().split('T')[0];
+		return plugin.settings.fileNamingConvention.replace('{{date}}', date) + '.md';
+	}
+
+	private async createResultNote(fileName: string, content: string) {
+		const plugin = this.app.plugins.plugins['perma-profiler'] as PermaPlugin;
+		const path = `${plugin.settings.defaultSaveLocation}/${fileName}`;
+		await this.app.vault.create(path, content);
+		return this.app.vault.getAbstractFileByPath(path);
 	}
 }
 
