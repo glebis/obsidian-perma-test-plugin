@@ -181,7 +181,14 @@ class PermaTestModal extends Modal {
 	private async createResultNote(fileName: string, content: string) {
 		const plugin = this.plugin;
 		const path = `${plugin.settings.defaultSaveLocation}/${fileName}`;
-		const file = await this.app.vault.create(path, content);
+		let file = this.app.vault.getAbstractFileByPath(path);
+		if (file instanceof TFile) {
+			// File exists, overwrite its content
+			await this.app.vault.modify(file, content);
+		} else {
+			// File doesn't exist, create a new one
+			file = await this.app.vault.create(path, content);
+		}
 		return file;
 	}
 }
