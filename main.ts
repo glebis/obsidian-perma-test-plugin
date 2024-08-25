@@ -106,10 +106,12 @@ export default class PermaPlugin extends Plugin {
 
 class PermaPostTestModal extends Modal {
 	plugin: PermaPlugin;
+	scores: Record<string, number>;
 
-	constructor(app: App, plugin: PermaPlugin) {
+	constructor(app: App, plugin: PermaPlugin, scores: Record<string, number>) {
 		super(app);
 		this.plugin = plugin;
+		this.scores = scores;
 	}
 
 	async onOpen() {
@@ -117,6 +119,20 @@ class PermaPostTestModal extends Modal {
 		contentEl.empty();
 		contentEl.createEl('h2', {text: 'PERMA Profiler Test Completed'});
 		
+		// Add results table
+		const resultsTable = contentEl.createEl('table', {cls: 'perma-results-table'});
+		const headerRow = resultsTable.createEl('tr');
+		headerRow.createEl('th', {text: 'Category'});
+		headerRow.createEl('th', {text: 'Score'});
+		headerRow.createEl('th', {text: 'Interpretation'});
+
+		for (const [key, value] of Object.entries(this.scores)) {
+			const row = resultsTable.createEl('tr');
+			row.createEl('td', {text: this.getCategoryFullName(key)});
+			row.createEl('td', {text: value.toFixed(2)});
+			row.createEl('td', {text: this.interpretScore(value)});
+		}
+
 		const aboutContent = contentEl.createEl('div', {cls: 'perma-about-content'});
 		const aboutText = await this.app.vault.adapter.read(`${this.plugin.manifest.dir}/about_en.md`);
 		await MarkdownRenderer.renderMarkdown(aboutText, aboutContent, '', this.plugin);
@@ -135,6 +151,27 @@ class PermaPostTestModal extends Modal {
 	onClose() {
 		const {contentEl} = this;
 		contentEl.empty();
+	}
+
+	private getCategoryFullName(key: string): string {
+		const categories = {
+			P: "Positive Emotion",
+			E: "Engagement",
+			R: "Relationships",
+			M: "Meaning",
+			A: "Accomplishment",
+			N: "Negative Emotion",
+			H: "Health",
+			Lon: "Loneliness",
+			PERMA: "Overall Well-being"
+		};
+		return categories[key as keyof typeof categories] || key;
+	}
+
+	private interpretScore(score: number): string {
+		if (score < 3.33) return "Low";
+		if (score < 6.67) return "Moderate";
+		return "High";
 	}
 }
 
@@ -218,7 +255,7 @@ class PermaTestModal extends Modal {
 		for (let i = 0; i <= 10; i++) {
 			const button = buttonContainer.createEl('button', {text: i.toString(), cls: 'perma-answer-button'});
 			const currentScore = this.answers.get(question.id)?.score;
-			if ((currentScore === undefined && i === 0) || currentScore === i) {
+			if (currentScore === i) {
 				button.addClass('perma-answer-button-selected');
 			}
 			button.onclick = () => {
@@ -315,7 +352,7 @@ class PermaTestModal extends Modal {
 		
 		new Notice('Test completed! Results have been generated.');
 		this.close();
-		new PermaPostTestModal(this.app, this.plugin).open();
+		new PermaPostTestModal(this.app, this.plugin, scores).open();
 	}
 
 	private calculateScores() {

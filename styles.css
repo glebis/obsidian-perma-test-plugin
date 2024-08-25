@@ -85,9 +85,9 @@
 }
 
 .perma-answer-button {
-    flex: 0 0 calc(9% - 2px); /* Adjust the width to fit 11 buttons (0-10) */
+    flex: 0 0 calc(8.5% - 2px); /* Slightly decreased width */
     margin: 1px;
-    padding: 8px 5px;
+    padding: 8px 3px; /* Slightly decreased horizontal padding */
     border: 1px solid var(--background-modifier-border);
     border-radius: 4px;
     background-color: var(--background-secondary);
@@ -144,4 +144,24 @@
 
 .perma-button-container button:hover {
     opacity: 0.8;
+}
+.perma-results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.perma-results-table th, .perma-results-table td {
+    border: 1px solid var(--background-modifier-border);
+    padding: 8px;
+    text-align: left;
+}
+
+.perma-results-table th {
+    background-color: var(--background-secondary-alt);
+    font-weight: bold;
+}
+
+.perma-results-table tr:nth-child(even) {
+    background-color: var(--background-secondary);
 }
