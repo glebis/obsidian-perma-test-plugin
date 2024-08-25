@@ -93,10 +93,10 @@ class PermaTestModal extends Modal {
 			.setDesc('0 = Never, 10 = Always')
 			.addSlider(slider => slider
 				.setLimits(0, 10, 1)
-				.setValue(this.answers.get(this.currentQuestion) || 5)
+				.setValue(this.answers.get(this.currentQuestion)?.score ?? 5)
 				.setDynamicTooltip()
 				.onChange(value => {
-					const currentAnswer = this.answers.get(this.currentQuestion) || { score: 5, reflection: '' };
+					const currentAnswer = this.answers.get(this.currentQuestion) ?? { score: 5, reflection: '' };
 					this.answers.set(this.currentQuestion, { ...currentAnswer, score: value });
 				}));
 
@@ -111,7 +111,7 @@ class PermaTestModal extends Modal {
 		});
 
 		commentTextarea.addEventListener('input', (event) => {
-			const currentAnswer = this.answers.get(this.currentQuestion) || { score: 5, reflection: '' };
+			const currentAnswer = this.answers.get(this.currentQuestion) ?? { score: 5, reflection: '' };
 			this.answers.set(this.currentQuestion, { ...currentAnswer, reflection: (event.target as HTMLTextAreaElement).value });
 		});
 
