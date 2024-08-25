@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, EditorSuggest, EditorPosition, EditorSuggestTriggerInfo, EditorSuggestContext } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, EditorSuggest, EditorPosition, EditorSuggestTriggerInfo, EditorSuggestContext, MarkdownRenderer } from 'obsidian';
 import { questions, Question } from './questions_en';
 
 interface PermaPluginSettings {
@@ -101,6 +101,40 @@ export default class PermaPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+}
+
+class PermaPostTestModal extends Modal {
+	plugin: PermaPlugin;
+
+	constructor(app: App, plugin: PermaPlugin) {
+		super(app);
+		this.plugin = plugin;
+	}
+
+	async onOpen() {
+		const {contentEl} = this;
+		contentEl.empty();
+		contentEl.createEl('h2', {text: 'PERMA Profiler Test Completed'});
+		
+		const aboutContent = contentEl.createEl('div', {cls: 'perma-about-content'});
+		const aboutText = await this.app.vault.adapter.read(`${this.plugin.manifest.dir}/about_en.md`);
+		await MarkdownRenderer.renderMarkdown(aboutText, aboutContent, '', this.plugin);
+
+		const buttonContainer = contentEl.createEl('div', {cls: 'perma-button-container'});
+		const closeButton = buttonContainer.createEl('button', {text: 'Close'});
+		closeButton.onclick = () => this.close();
+
+		const retakeButton = buttonContainer.createEl('button', {text: 'Retake Test'});
+		retakeButton.onclick = () => {
+			this.close();
+			new PermaTestModal(this.app, this.plugin).open();
+		};
+	}
+
+	onClose() {
+		const {contentEl} = this;
+		contentEl.empty();
 	}
 }
 
@@ -279,8 +313,9 @@ class PermaTestModal extends Modal {
 			this.app.workspace.getLeaf().openFile(file);
 		}
 		
-		new Notice('Test completed! Results have been generated and opened.');
+		new Notice('Test completed! Results have been generated.');
 		this.close();
+		new PermaPostTestModal(this.app, this.plugin).open();
 	}
 
 	private calculateScores() {

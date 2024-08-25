@@ -89,3 +89,31 @@
     background-color: #4285f4 !important; /* Google Blue */
     color: white !important;
 }
+
+.perma-button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.perma-button-container button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.perma-button-container button:first-child {
+    background-color: var(--interactive-normal);
+    color: var(--text-normal);
+}
+
+.perma-button-container button:last-child {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.perma-button-container button:hover {
+    opacity: 0.8;
+}
