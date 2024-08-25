@@ -255,7 +255,7 @@ class PermaTestModal extends Modal {
 		for (let i = 0; i <= 10; i++) {
 			const button = buttonContainer.createEl('button', {text: i.toString(), cls: 'perma-answer-button'});
 			const currentScore = this.answers.get(question.id)?.score;
-			if (currentScore === i) {
+			if (currentScore === i && i !== 10) {
 				button.addClass('perma-answer-button-selected');
 			}
 			button.onclick = () => {
