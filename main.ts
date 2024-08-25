@@ -1,17 +1,5 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
-// Remember to rename these classes and interfaces!
-
-interface MyPluginSettings {
-	mySetting: string;
-}
-
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
-}
-
-import { Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-
 interface PermaPluginSettings {
 	resultTemplate: string;
 	fileNamingConvention: string;
@@ -19,12 +7,12 @@ interface PermaPluginSettings {
 	showRibbonIcon: boolean;
 }
 
-const DEFAULT_SETTINGS: PermaPluginSettings = {
+const DEFAULT_SETTINGS: Partial<PermaPluginSettings> = {
 	resultTemplate: '# PERMA Profiler Results\n\nDate: {{date}}\n\n## Scores\n\nPositive Emotion: {{score_P}}\nEngagement: {{score_E}}\nRelationships: {{score_R}}\nMeaning: {{score_M}}\nAccomplishment: {{score_A}}\n\n## Interpretations\n\n{{interpretations}}',
 	fileNamingConvention: 'PERMA-Results-{{date}}',
 	defaultSaveLocation: '/',
 	showRibbonIcon: true
-}
+};
 
 export default class PermaPlugin extends Plugin {
 	settings: PermaPluginSettings;
