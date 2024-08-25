@@ -105,8 +105,11 @@ export default class PermaPlugin extends Plugin {
 }
 
 class PermaAboutModal extends Modal {
+	plugin: PermaPlugin;
+
 	constructor(app: App, plugin: PermaPlugin) {
 		super(app);
+		this.plugin = plugin;
 	}
 
 	onOpen() {
