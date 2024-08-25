@@ -69,6 +69,10 @@
     background-color: #3367d6; /* Darker blue on hover */
 }
 
+.perma-start-test-button:active {
+    background-color: #2a56c6; /* Even darker blue when clicked */
+}
+
 .perma-answer-container {
     margin-bottom: 20px;
 }
