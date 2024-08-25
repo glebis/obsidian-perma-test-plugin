@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
 import { questions } from './questions_en';
 
 interface PermaPluginSettings {
@@ -26,7 +26,7 @@ export default class PermaPlugin extends Plugin {
 		// Add ribbon icon
 		if (this.settings.showRibbonIcon) {
 			const ribbonIconEl = this.addRibbonIcon('clipboard-list', 'PERMA Profiler', (evt: MouseEvent) => {
-				new PermaTestModal(this.app).open();
+				new PermaTestModal(this.app, this).open();
 			});
 			ribbonIconEl.addClass('perma-profiler-ribbon-class');
 		}
@@ -36,7 +36,7 @@ export default class PermaPlugin extends Plugin {
 			id: 'start-perma-test',
 			name: 'Start PERMA Profiler Test',
 			callback: () => {
-				new PermaTestModal(this.app).open();
+				new PermaTestModal(this.app, this).open();
 			}
 		});
 
@@ -61,10 +61,12 @@ class PermaTestModal extends Modal {
 	private currentQuestion: number = 0;
 	private answers: Map<number, number> = new Map();
 	private questions: string[];
+	private plugin: PermaPlugin;
 
-	constructor(app: App) {
+	constructor(app: App, plugin: PermaPlugin) {
 		super(app);
 		this.questions = questions;
+		this.plugin = plugin;
 	}
 
 	onOpen() {
@@ -154,7 +156,7 @@ class PermaTestModal extends Modal {
 	}
 
 	private generateResultContent(scores: Record<string, number>) {
-		const plugin = this.app.plugins.getPlugin('perma-profiler') as PermaPlugin;
+		const plugin = this.plugin;
 		let content = plugin.settings.resultTemplate;
 		
 		const date = new Date().toISOString().split('T')[0];
@@ -171,13 +173,13 @@ class PermaTestModal extends Modal {
 	}
 
 	private generateFileName() {
-		const plugin = this.app.plugins.getPlugin('perma-profiler') as PermaPlugin;
+		const plugin = this.plugin;
 		const date = new Date().toISOString().split('T')[0];
 		return plugin.settings.fileNamingConvention.replace('{{date}}', date) + '.md';
 	}
 
 	private async createResultNote(fileName: string, content: string) {
-		const plugin = this.app.plugins.getPlugin('perma-profiler') as PermaPlugin;
+		const plugin = this.plugin;
 		const path = `${plugin.settings.defaultSaveLocation}/${fileName}`;
 		const file = await this.app.vault.create(path, content);
 		return file;
