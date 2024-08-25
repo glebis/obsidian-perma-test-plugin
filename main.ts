@@ -1,4 +1,5 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { questions } from './questions_en';
 
 interface PermaPluginSettings {
 	resultTemplate: string;
@@ -57,14 +58,6 @@ export default class PermaPlugin extends Plugin {
 class PermaTestModal extends Modal {
 	private currentQuestion: number = 0;
 	private answers: Map<number, number> = new Map();
-	private questions: string[] = [
-		"In general, how often do you feel joyful?",
-		"How often do you feel positively challenged by your work?",
-		"To what extent do you receive help and support from others when you need it?",
-		"In general, to what extent do you lead a purposeful and meaningful life?",
-		"How often do you feel you are making progress towards accomplishing your goals?"
-		// Add more questions here
-	];
 
 	constructor(app: App) {
 		super(app);
