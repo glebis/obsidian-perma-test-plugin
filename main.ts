@@ -255,8 +255,8 @@ class PermaTestModal extends Modal {
 		const buttonContainer = answerContainer.createEl('div', {cls: 'perma-button-container'});
 		for (let i = 0; i <= 10; i++) {
 			const button = buttonContainer.createEl('button', {text: i.toString(), cls: 'perma-answer-button'});
-			const currentScore = this.answers.get(question.id)?.score;
-			if (currentScore === i && i !== 10) {
+			const currentScore = this.answers.get(question.id)?.score ?? 0;
+			if (currentScore === i) {
 				button.addClass('perma-answer-button-selected');
 			}
 			button.onclick = () => {
@@ -265,6 +265,12 @@ class PermaTestModal extends Modal {
 				buttonContainer.querySelectorAll('.perma-answer-button').forEach(btn => btn.removeClass('perma-answer-button-selected'));
 				button.addClass('perma-answer-button-selected');
 			};
+		}
+
+		// If no answer is set for this question, select button 0 by default
+		if (!this.answers.has(question.id)) {
+			this.answers.set(question.id, { score: 0, reflection: '' });
+			buttonContainer.querySelector('.perma-answer-button')?.addClass('perma-answer-button-selected');
 		}
 
 		// Add collapsible reflections section
