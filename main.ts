@@ -164,7 +164,7 @@ class PermaAboutModal extends Modal {
 			<p>The test consists of 23 questions and typically takes about 5-10 minutes to complete.</p>
 		`;
 
-		const startButton = contentEl.createEl('button', {text: 'Start Test'});
+		const startButton = contentEl.createEl('button', {text: 'Start Test', cls: 'perma-start-test-button'});
 		startButton.onclick = () => {
 			this.close();
 			new PermaTestModal(this.app, this.plugin).open();
