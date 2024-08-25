@@ -1,8 +1,19 @@
-/*
+.perma-question {
+    margin-bottom: 20px;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.perma-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
 
-If your plugin does not need CSS, delete this file.
+.perma-progress {
+    text-align: center;
+    margin-top: 10px;
+    font-style: italic;
+}
 
-*/
+.perma-profiler-ribbon-class {
+    color: var(--text-accent);
+}
