@@ -277,7 +277,7 @@ class PermaTestModal extends Modal {
 
 	private generateInterpretation(category: string, score: number): string {
 		const level = this.interpretScore(score);
-		const interpretations = {
+		const interpretations: Record<string, Record<string, string>> = {
 			P: {
 				Low: "You may benefit from activities that boost positive emotions.",
 				Moderate: "You experience positive emotions, but there's room for improvement.",
@@ -302,9 +302,34 @@ class PermaTestModal extends Modal {
 				Low: "Set achievable goals to increase your sense of accomplishment.",
 				Moderate: "You're making progress, but could set more challenging goals.",
 				High: "You frequently feel a sense of accomplishment and achievement."
+			},
+			N: {
+				Low: "You experience low levels of negative emotions, which is generally good.",
+				Moderate: "You experience moderate levels of negative emotions.",
+				High: "You might want to find ways to reduce negative emotions in your life."
+			},
+			H: {
+				Low: "Consider focusing on improving your overall health.",
+				Moderate: "Your health is average, but there's room for improvement.",
+				High: "You're in good health compared to others your age and gender."
+			},
+			Lon: {
+				Low: "You don't often feel lonely, which is positive.",
+				Moderate: "You sometimes feel lonely, which is common.",
+				High: "You might benefit from seeking more social connections."
+			},
+			PERMA: {
+				Low: "Your overall well-being could use some improvement.",
+				Moderate: "Your overall well-being is average, with room for growth.",
+				High: "You have a high level of overall well-being."
 			}
 		};
-		return interpretations[category as keyof typeof interpretations][level as keyof typeof interpretations['P']];
+
+		if (interpretations[category] && interpretations[category][level]) {
+			return interpretations[category][level];
+		} else {
+			return `Your score for ${this.getCategoryFullName(category)} is in the ${level} range.`;
+		}
 	}
 
 	private generateResultContent(scores: Record<string, number>) {
