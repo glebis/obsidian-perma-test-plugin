@@ -58,9 +58,11 @@ export default class PermaPlugin extends Plugin {
 class PermaTestModal extends Modal {
 	private currentQuestion: number = 0;
 	private answers: Map<number, number> = new Map();
+	private questions: string[];
 
 	constructor(app: App) {
 		super(app);
+		this.questions = questions;
 	}
 
 	onOpen() {
