@@ -138,7 +138,9 @@ class PermaTestModal extends Modal {
 		const file = await this.createResultNote(fileName, content);
 		
 		// Open the newly created note
-		this.app.workspace.activeLeaf.openFile(file);
+		if (file instanceof TFile) {
+			this.app.workspace.getLeaf().openFile(file);
+		}
 		
 		new Notice('Test completed! Results have been generated and opened.');
 		this.close();
@@ -152,7 +154,7 @@ class PermaTestModal extends Modal {
 	}
 
 	private generateResultContent(scores: Record<string, number>) {
-		const plugin = this.app.plugins.plugins['perma-profiler'] as PermaPlugin;
+		const plugin = this.app.plugins.getPlugin('perma-profiler') as PermaPlugin;
 		let content = plugin.settings.resultTemplate;
 		
 		const date = new Date().toISOString().split('T')[0];
@@ -169,16 +171,16 @@ class PermaTestModal extends Modal {
 	}
 
 	private generateFileName() {
-		const plugin = this.app.plugins.plugins['perma-profiler'] as PermaPlugin;
+		const plugin = this.app.plugins.getPlugin('perma-profiler') as PermaPlugin;
 		const date = new Date().toISOString().split('T')[0];
 		return plugin.settings.fileNamingConvention.replace('{{date}}', date) + '.md';
 	}
 
 	private async createResultNote(fileName: string, content: string) {
-		const plugin = this.app.plugins.plugins['perma-profiler'] as PermaPlugin;
+		const plugin = this.app.plugins.getPlugin('perma-profiler') as PermaPlugin;
 		const path = `${plugin.settings.defaultSaveLocation}/${fileName}`;
-		await this.app.vault.create(path, content);
-		return this.app.vault.getAbstractFileByPath(path);
+		const file = await this.app.vault.create(path, content);
+		return file;
 	}
 }
 
