@@ -317,7 +317,7 @@ class PermaTestModal extends Modal {
 		contentEl.empty();
 		contentEl.createEl('h2', {text: 'PERMA Profiler Test'});
 		this.displayQuestion();
-		this.registerDomEvent(document, 'keydown', this.handleKeyDown.bind(this));
+		this.plugin.registerDomEvent(document, 'keydown', this.handleKeyDown.bind(this));
 	}
 
 	onClose() {
@@ -339,7 +339,8 @@ class PermaTestModal extends Modal {
 
 	private selectAnswer(score: number) {
 		const question = this.questions[this.currentQuestion];
-		this.answers.set(question.id, { ...this.answers.get(question.id), score: score });
+		const currentAnswer = this.answers.get(question.id) || { score: 0, reflection: '' };
+		this.answers.set(question.id, { ...currentAnswer, score: score });
 		this.displayQuestion();
 	}
 
