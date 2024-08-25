@@ -303,6 +303,7 @@ class PermaTestModal extends Modal {
 	private questions: Question[];
 	private plugin: PermaPlugin;
 	private fileSuggest: FileSuggest;
+	private isReflectionActive: boolean = false;
 
 	constructor(app: App, plugin: PermaPlugin) {
 		super(app);
@@ -316,11 +317,30 @@ class PermaTestModal extends Modal {
 		contentEl.empty();
 		contentEl.createEl('h2', {text: 'PERMA Profiler Test'});
 		this.displayQuestion();
+		this.registerDomEvent(document, 'keydown', this.handleKeyDown.bind(this));
 	}
 
 	onClose() {
 		const {contentEl} = this;
 		contentEl.empty();
+	}
+
+	private handleKeyDown(event: KeyboardEvent) {
+		if (this.isReflectionActive) return;
+
+		const key = event.key;
+		if (key >= '0' && key <= '9') {
+			const score = parseInt(key);
+			this.selectAnswer(score);
+		} else if (key === 'Enter') {
+			this.nextQuestion();
+		}
+	}
+
+	private selectAnswer(score: number) {
+		const question = this.questions[this.currentQuestion];
+		this.answers.set(question.id, { ...this.answers.get(question.id), score: score });
+		this.displayQuestion();
 	}
 
 	private displayQuestion() {
@@ -342,12 +362,7 @@ class PermaTestModal extends Modal {
 			if (currentScore === i) {
 				button.addClass('perma-answer-button-selected');
 			}
-			button.onclick = () => {
-				const currentAnswer = this.answers.get(question.id) ?? { score: 0, reflection: '' };
-				this.answers.set(question.id, { ...currentAnswer, score: i });
-				buttonContainer.querySelectorAll('.perma-answer-button').forEach(btn => btn.removeClass('perma-answer-button-selected'));
-				button.addClass('perma-answer-button-selected');
-			};
+			button.onclick = () => this.selectAnswer(i);
 		}
 
 		// If no answer is set for this question, select button 0 by default
@@ -367,6 +382,7 @@ class PermaTestModal extends Modal {
 					if (value) {
 						setTimeout(() => commentTextarea.focus(), 0);
 					}
+					this.isReflectionActive = value;
 				})
 			);
 
@@ -406,7 +422,6 @@ class PermaTestModal extends Modal {
 		} else {
 			rightButtonContainer.createEl('button', {text: 'Finish'}).onclick = () => this.finishTest();
 		}
-
 	}
 
 	private nextQuestion() {
