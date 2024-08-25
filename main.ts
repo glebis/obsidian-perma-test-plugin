@@ -111,8 +111,9 @@ class PermaTestModal extends Modal {
 
 		// Enable file suggest functionality
 		this.app.workspace.onLayoutReady(() => {
-			const inputEl = commentTextarea as HTMLInputElement;
-			(this.app as any).fileManager?.processFrontMatter(inputEl, this.app.vault.getRoot());
+			if (this.app.fileManager) {
+				this.app.fileManager.processFrontMatter(commentTextarea, this.app.vault.getRoot());
+			}
 		});
 
 		const navigationEl = contentEl.createEl('div', {cls: 'perma-navigation'});
