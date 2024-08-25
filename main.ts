@@ -229,10 +229,56 @@ class PermaTestModal extends Modal {
 	}
 
 	private calculateScores() {
-		// TODO: Implement actual scoring logic
-		return {
-			P: 5, E: 5, R: 5, M: 5, A: 5
+		const categories = {
+			P: [0], E: [1], R: [2], M: [3], A: [4]
 		};
+		
+		const scores: Record<string, number> = {};
+		
+		for (const [category, questionIndices] of Object.entries(categories)) {
+			const categoryScores = questionIndices.map(index => this.answers.get(index)?.score || 0);
+			scores[category] = categoryScores.reduce((sum, score) => sum + score, 0) / categoryScores.length;
+		}
+		
+		return scores;
+	}
+
+	private interpretScore(score: number): string {
+		if (score < 3.33) return "Low";
+		if (score < 6.67) return "Moderate";
+		return "High";
+	}
+
+	private generateInterpretation(category: string, score: number): string {
+		const level = this.interpretScore(score);
+		const interpretations = {
+			P: {
+				Low: "You may benefit from activities that boost positive emotions.",
+				Moderate: "You experience positive emotions, but there's room for improvement.",
+				High: "You frequently experience positive emotions and joy in your life."
+			},
+			E: {
+				Low: "Consider finding more engaging activities in your daily life.",
+				Moderate: "You feel engaged at times, but could seek more flow experiences.",
+				High: "You often feel deeply engaged and absorbed in your activities."
+			},
+			R: {
+				Low: "You might want to focus on building stronger relationships.",
+				Moderate: "You have some good relationships, but could work on deepening connections.",
+				High: "You have strong, supportive relationships in your life."
+			},
+			M: {
+				Low: "Reflect on what gives your life purpose and meaning.",
+				Moderate: "You have some sense of meaning, but could explore this further.",
+				High: "You have a strong sense of purpose and meaning in your life."
+			},
+			A: {
+				Low: "Set achievable goals to increase your sense of accomplishment.",
+				Moderate: "You're making progress, but could set more challenging goals.",
+				High: "You frequently feel a sense of accomplishment and achievement."
+			}
+		};
+		return interpretations[category as keyof typeof interpretations][level as keyof typeof interpretations['P']];
 	}
 
 	private generateResultContent(scores: Record<string, number>) {
@@ -242,19 +288,23 @@ class PermaTestModal extends Modal {
 		const date = new Date().toISOString().split('T')[0];
 		content = content.replace('{{date}}', date);
 		
+		let interpretations = '';
 		for (const [key, value] of Object.entries(scores)) {
-			content = content.replace(`{{score_${key}}}`, value.toString());
+			content = content.replace(`{{score_${key}}}`, value.toFixed(2));
+			interpretations += `${key}: ${this.generateInterpretation(key, value)}\n\n`;
 		}
 		
-		// Generate interpretations (placeholder)
-		content = content.replace('{{interpretations}}', 'Interpretations to be implemented.');
+		content = content.replace('{{interpretations}}', interpretations.trim());
 		
 		// Add questions and reflections
 		let questionsAndReflections = '## Questions and Reflections\n\n';
 		this.answers.forEach((answer, index) => {
 			questionsAndReflections += `### Question ${index + 1}: ${this.questions[index]}\n`;
 			questionsAndReflections += `Score: ${answer.score}\n`;
-			questionsAndReflections += `Reflection: ${answer.reflection || 'No reflection provided'}\n\n`;
+			if (answer.reflection) {
+				questionsAndReflections += `Reflection: ${answer.reflection}\n`;
+			}
+			questionsAndReflections += '\n';
 		});
 		
 		content += '\n\n' + questionsAndReflections;
