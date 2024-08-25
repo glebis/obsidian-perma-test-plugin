@@ -8,18 +8,15 @@ interface PermaPluginSettings {
 	showRibbonIcon: boolean;
 }
 
-class FileSuggest extends EditorSuggest<string> {
+class FileSuggest extends EditorSuggest<TFile> {
     plugin: PermaPlugin;
-    inputEl: HTMLTextAreaElement;
-    suggestEl: HTMLElement | null;
-    suggestions: string[] = [];
 
     constructor(plugin: PermaPlugin) {
         super(plugin.app);
         this.plugin = plugin;
     }
 
-    onTrigger(cursor: EditorPosition, editor: Editor, file: TFile): EditorSuggestTriggerInfo | null {
+    onTrigger(cursor: EditorPosition, editor: Editor): EditorSuggestTriggerInfo | null {
         const substr = editor.getLine(cursor.line).substring(0, cursor.ch);
         const match = substr.match(/\[\[([^\]]+)$/);
 
@@ -33,32 +30,28 @@ class FileSuggest extends EditorSuggest<string> {
         return null;
     }
 
-    getSuggestions(context: EditorSuggestContext): string[] {
-        const files = this.plugin.app.vault.getFiles();
+    getSuggestions(context: EditorSuggestContext): TFile[] {
+        const files = this.app.vault.getMarkdownFiles();
         const query = context.query.toLowerCase();
-        return files
-            .filter(file => file.path.toLowerCase().contains(query))
-            .map(file => file.path);
+        return files.filter(file => 
+            file.path.toLowerCase().contains(query) ||
+            file.basename.toLowerCase().contains(query)
+        );
     }
 
-    renderSuggestion(value: string, el: HTMLElement): void {
-        el.setText(value);
+    renderSuggestion(file: TFile, el: HTMLElement): void {
+        el.createEl("div", { text: file.basename });
+        el.createEl("small", { text: file.path });
     }
 
-    selectSuggestion(value: string): void {
-        const { editor } = this.context!;
-        editor.replaceRange(`${value}]]`, this.context!.start, this.context!.end);
-    }
-
-    attachEditor(editor: HTMLTextAreaElement): void {
-        this.inputEl = editor;
-        this.suggestEl = editor.parentElement?.createDiv('suggestion-container');
-        this.scope.register([], 'Enter', (evt: KeyboardEvent) => {
-            if (this.suggestions.length > 0) {
-                evt.preventDefault();
-                this.selectSuggestion(this.suggestions[0]);
-            }
-        });
+    selectSuggestion(file: TFile): void {
+        if (this.context) {
+            this.context.editor.replaceRange(
+                `[[${file.path}]]`,
+                this.context.start,
+                this.context.end
+            );
+        }
     }
 }
 
@@ -123,7 +116,6 @@ class PermaTestModal extends Modal {
 		this.questions = questions;
 		this.plugin = plugin;
 		this.fileSuggest = new FileSuggest(plugin);
-		plugin.registerEditorSuggest(this.fileSuggest);
 	}
 
 	onOpen() {
@@ -173,16 +165,13 @@ class PermaTestModal extends Modal {
 		});
 
 		// Enable file suggest functionality
-		this.fileSuggest.attachEditor(commentTextarea);
+		this.plugin.registerEditorSuggest(this.fileSuggest);
 
 		// Update the answer when the textarea changes
 		commentTextarea.addEventListener('input', (event) => {
 			const currentAnswer = this.answers.get(this.currentQuestion) ?? { score: 5, reflection: '' };
 			this.answers.set(this.currentQuestion, { ...currentAnswer, reflection: (event.target as HTMLTextAreaElement).value });
 		});
-
-		// Register the FileSuggest with the Editor
-		this.plugin.registerEditorSuggest(this.fileSuggest);
 
 		const navigationEl = contentEl.createEl('div', {cls: 'perma-navigation'});
 		
