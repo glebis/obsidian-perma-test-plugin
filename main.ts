@@ -335,7 +335,11 @@ class PermaTestModal extends Modal {
 			const score = parseInt(key);
 			this.selectAnswer(score);
 		} else if (key === 'Enter') {
-			this.nextQuestion();
+			if (this.currentQuestion === this.questions.length - 1) {
+				this.finishTest();
+			} else {
+				this.nextQuestion();
+			}
 		}
 	}
 
