@@ -36,6 +36,23 @@
 .perma-profiler-ribbon-class {
     color: var(--text-accent);
 }
+
+.perma-about-content {
+    margin-bottom: 20px;
+}
+
+.perma-about-content h3 {
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+
+.perma-about-content ul {
+    padding-left: 20px;
+}
+
+.perma-about-content p, .perma-about-content li {
+    margin-bottom: 10px;
+}
 .perma-answer-container {
     margin-bottom: 20px;
 }

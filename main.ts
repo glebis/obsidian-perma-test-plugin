@@ -73,7 +73,7 @@ export default class PermaPlugin extends Plugin {
 		// Add ribbon icon
 		if (this.settings.showRibbonIcon) {
 			const ribbonIconEl = this.addRibbonIcon('clipboard-list', 'PERMA Profiler', (evt: MouseEvent) => {
-				new PermaTestModal(this.app, this).open();
+				new PermaAboutModal(this.app, this).open();
 			});
 			ribbonIconEl.addClass('perma-profiler-ribbon-class');
 		}
@@ -81,9 +81,9 @@ export default class PermaPlugin extends Plugin {
 		// Add command to start the PERMA Profiler test
 		this.addCommand({
 			id: 'start-perma-test',
-			name: 'Start test',
+			name: 'Start PERMA Profiler',
 			callback: () => {
-				new PermaTestModal(this.app, this).open();
+				new PermaAboutModal(this.app, this).open();
 			}
 		});
 
@@ -101,6 +101,42 @@ export default class PermaPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+}
+
+class PermaAboutModal extends Modal {
+	constructor(app: App, plugin: PermaPlugin) {
+		super(app);
+	}
+
+	onOpen() {
+		const {contentEl} = this;
+		contentEl.empty();
+		contentEl.createEl('h2', {text: 'About PERMA Profiler'});
+		
+		const aboutContent = contentEl.createEl('div', {cls: 'perma-about-content'});
+		aboutContent.innerHTML = `
+			<p>The PERMA Profiler is a brief multidimensional measure of flourishing. It assesses Well-Being Theory's five domains: Positive Emotion, Engagement, Relationships, Meaning, and Accomplishment.</p>
+			<h3>Instructions</h3>
+			<p>The following questions ask you about aspects of your well-being. Please read each question carefully and respond using the scale provided.</p>
+			<ul>
+				<li>There are no right or wrong answers.</li>
+				<li>Please be as honest and accurate as possible.</li>
+				<li>You will have a chance to reflect on each question after answering.</li>
+			</ul>
+			<p>The test consists of 23 questions and typically takes about 5-10 minutes to complete.</p>
+		`;
+
+		const startButton = contentEl.createEl('button', {text: 'Start Test'});
+		startButton.onclick = () => {
+			this.close();
+			new PermaTestModal(this.app, this.plugin).open();
+		};
+	}
+
+	onClose() {
+		const {contentEl} = this;
+		contentEl.empty();
 	}
 }
 
