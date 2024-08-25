@@ -6,6 +6,7 @@ interface PermaPluginSettings {
 	fileNamingConvention: string;
 	defaultSaveLocation: string;
 	showRibbonIcon: boolean;
+	createResultFile: boolean;
 }
 
 class FileSuggest extends EditorSuggest<TFile> {
@@ -59,7 +60,8 @@ const DEFAULT_SETTINGS: Partial<PermaPluginSettings> = {
 	resultTemplate: '# PERMA Profiler Results\n\nDate: {{date}}\n\n## Scores and Interpretations\n\n{{interpretations}}\n\n## Overall Reflection\n\n[Your overall reflection on the PERMA test results goes here]\n\n#perma-profiler-test',
 	fileNamingConvention: 'PERMA-Results-{{date}}',
 	defaultSaveLocation: '/',
-	showRibbonIcon: true
+	showRibbonIcon: true,
+	createResultFile: true
 };
 
 export default class PermaPlugin extends Plugin {
@@ -446,16 +448,21 @@ class PermaTestModal extends Modal {
 		// Generate result content
 		const content = this.generateResultContent(scores);
 		
-		// Create and open the new note
-		const fileName = this.generateFileName();
-		const file = await this.createResultNote(fileName, content);
-		
-		// Open the newly created note
-		if (file instanceof TFile) {
-			this.app.workspace.getLeaf().openFile(file);
+		if (this.plugin.settings.createResultFile) {
+			// Create and open the new note
+			const fileName = this.generateFileName();
+			const file = await this.createResultNote(fileName, content);
+			
+			// Open the newly created note
+			if (file instanceof TFile) {
+				this.app.workspace.getLeaf().openFile(file);
+			}
+			
+			new Notice('Test completed! Results have been generated and saved.');
+		} else {
+			new Notice('Test completed! Results have been generated.');
 		}
 		
-		new Notice('Test completed! Results have been generated.');
 		this.close();
 		new PermaPostTestModal(this.app, this.plugin, scores).open();
 	}
@@ -638,6 +645,16 @@ class PermaSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.showRibbonIcon)
 				.onChange(async (value) => {
 					this.plugin.settings.showRibbonIcon = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Create Result File')
+			.setDesc('Toggle creation of result file')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.createResultFile)
+				.onChange(async (value) => {
+					this.plugin.settings.createResultFile = value;
 					await this.plugin.saveSettings();
 				}));
 	}
