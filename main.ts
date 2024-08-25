@@ -151,7 +151,8 @@ class PermaTestModal extends Modal {
 			button.onclick = () => {
 				const currentAnswer = this.answers.get(question.id) ?? { score: 0, reflection: '' };
 				this.answers.set(question.id, { ...currentAnswer, score: i });
-				this.displayQuestion(); // Refresh the question display to update button states
+				buttonContainer.querySelectorAll('.perma-answer-button').forEach(btn => btn.removeClass('perma-answer-button-selected'));
+				button.addClass('perma-answer-button-selected');
 			};
 		}
 
@@ -339,8 +340,10 @@ class PermaTestModal extends Modal {
 		const plugin = this.plugin;
 		let content = plugin.settings.resultTemplate;
 		
-		const date = new Date().toISOString().split('T')[0];
-		content = content.replace('{{date}}', date);
+		const now = new Date();
+		const date = now.toISOString().split('T')[0];
+		const time = now.toTimeString().split(' ')[0];
+		content = content.replace('{{date}}', `${date} ${time}`);
 		
 		// Generate scores and interpretations table
 		let scoresTable = '| Category | Score | Interpretation |\n|----------|-------|----------------|\n';
@@ -394,8 +397,10 @@ class PermaTestModal extends Modal {
 
 	private generateFileName() {
 		const plugin = this.plugin;
-		const date = new Date().toISOString().split('T')[0];
-		return plugin.settings.fileNamingConvention.replace('{{date}}', date) + '.md';
+		const now = new Date();
+		const date = now.toISOString().split('T')[0];
+		const time = now.toTimeString().split(' ')[0];
+		return plugin.settings.fileNamingConvention.replace('{{date}}', `${date}-${time}`).replace(/:/g, '-') + '.md';
 	}
 
 	private async createResultNote(fileName: string, content: string) {
@@ -403,8 +408,10 @@ class PermaTestModal extends Modal {
 		const path = `${plugin.settings.defaultSaveLocation}/${fileName}`;
 		let file = this.app.vault.getAbstractFileByPath(path);
 		if (file instanceof TFile) {
-			// File exists, overwrite its content
-			await this.app.vault.modify(file, content);
+			// File exists, append the new content
+			const existingContent = await this.app.vault.read(file);
+			const updatedContent = existingContent + '\n\n' + content;
+			await this.app.vault.modify(file, updatedContent);
 		} else {
 			// File doesn't exist, create a new one
 			file = await this.app.vault.create(path, content);
