@@ -276,7 +276,7 @@ class PermaTestModal extends Modal {
 		// Add collapsible reflections section
 		const reflectionsSetting = new Setting(contentEl)
 			.setName('Reflections')
-			.setDesc('Add any thoughts or reflections on this question')
+			.setDesc('Any thoughts this question')
 			.addToggle(toggle => toggle
 				.setValue(false)
 				.onChange(value => {
@@ -324,7 +324,6 @@ class PermaTestModal extends Modal {
 			rightButtonContainer.createEl('button', {text: 'Finish'}).onclick = () => this.finishTest();
 		}
 
-		contentEl.createEl('div', {cls: 'perma-progress', text: `Question ${this.currentQuestion + 1} of ${this.questions.length}`});
 	}
 
 	private nextQuestion() {
