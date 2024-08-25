@@ -56,7 +56,7 @@ class FileSuggest extends EditorSuggest<TFile> {
 }
 
 const DEFAULT_SETTINGS: Partial<PermaPluginSettings> = {
-	resultTemplate: '# PERMA Profiler Results\n\nDate: {{date}}\n\n## Scores\n\nPositive Emotion: {{score_P}}\nEngagement: {{score_E}}\nRelationships: {{score_R}}\nMeaning: {{score_M}}\nAccomplishment: {{score_A}}\n\n## Interpretations\n\n{{interpretations}}',
+	resultTemplate: '# PERMA Profiler Results\n\nDate: {{date}}\n\n## Scores and Interpretations\n\n{{interpretations}}\n\n## Overall Reflection\n\n[Your overall reflection on the PERMA test results goes here]',
 	fileNamingConvention: 'PERMA-Results-{{date}}',
 	defaultSaveLocation: '/',
 	showRibbonIcon: true
@@ -288,13 +288,15 @@ class PermaTestModal extends Modal {
 		const date = new Date().toISOString().split('T')[0];
 		content = content.replace('{{date}}', date);
 		
-		let interpretations = '';
+		// Generate scores and interpretations table
+		let scoresTable = '| Category | Score | Interpretation |\n|----------|-------|----------------|\n';
 		for (const [key, value] of Object.entries(scores)) {
+			const interpretation = this.generateInterpretation(key, value);
+			scoresTable += `| ${this.getCategoryFullName(key)} | ${value.toFixed(2)} | ${interpretation} |\n`;
 			content = content.replace(`{{score_${key}}}`, value.toFixed(2));
-			interpretations += `${key}: ${this.generateInterpretation(key, value)}\n\n`;
 		}
 		
-		content = content.replace('{{interpretations}}', interpretations.trim());
+		content = content.replace('{{interpretations}}', scoresTable);
 		
 		// Add questions and reflections
 		let questionsAndReflections = '## Questions and Reflections\n\n';
@@ -310,6 +312,17 @@ class PermaTestModal extends Modal {
 		content += '\n\n' + questionsAndReflections;
 		
 		return content;
+	}
+
+	private getCategoryFullName(key: string): string {
+		const categories = {
+			P: "Positive Emotion",
+			E: "Engagement",
+			R: "Relationships",
+			M: "Meaning",
+			A: "Accomplishment"
+		};
+		return categories[key as keyof typeof categories] || key;
 	}
 
 	private generateFileName() {
