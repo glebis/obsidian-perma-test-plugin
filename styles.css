@@ -72,3 +72,8 @@
     background-color: var(--interactive-accent);
     color: var(--text-on-accent);
 }
+
+.perma-answer-button-selected {
+    background-color: #4285f4; /* Google Blue */
+    color: white;
+}

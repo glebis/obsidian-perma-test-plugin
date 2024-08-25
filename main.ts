@@ -163,6 +163,9 @@ class PermaTestModal extends Modal {
 				.setValue(false)
 				.onChange(value => {
 					reflectionsContent.style.display = value ? 'block' : 'none';
+					if (value) {
+						setTimeout(() => commentTextarea.focus(), 0);
+					}
 				})
 			);
 
