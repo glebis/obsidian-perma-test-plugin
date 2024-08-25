@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, EditorSuggest, EditorPosition, EditorSuggestTriggerInfo, EditorSuggestContext } from 'obsidian';
 import { questions } from './questions_en';
 
 interface PermaPluginSettings {
@@ -6,6 +6,46 @@ interface PermaPluginSettings {
 	fileNamingConvention: string;
 	defaultSaveLocation: string;
 	showRibbonIcon: boolean;
+}
+
+class FileSuggest extends EditorSuggest<string> {
+    plugin: PermaPlugin;
+
+    constructor(plugin: PermaPlugin) {
+        super(plugin.app);
+        this.plugin = plugin;
+    }
+
+    onTrigger(cursor: EditorPosition, editor: Editor, file: TFile): EditorSuggestTriggerInfo | null {
+        const substr = editor.getLine(cursor.line).substring(0, cursor.ch);
+        const match = substr.match(/\[\[([^\]]+)$/);
+
+        if (match) {
+            return {
+                start: { line: cursor.line, ch: match.index! },
+                end: cursor,
+                query: match[1]
+            };
+        }
+        return null;
+    }
+
+    getSuggestions(context: EditorSuggestContext): string[] {
+        const files = this.plugin.app.vault.getFiles();
+        const query = context.query.toLowerCase();
+        return files
+            .filter(file => file.path.toLowerCase().contains(query))
+            .map(file => file.path);
+    }
+
+    renderSuggestion(value: string, el: HTMLElement): void {
+        el.setText(value);
+    }
+
+    selectSuggestion(value: string): void {
+        const { editor } = this.context!;
+        editor.replaceRange(`${value}]]`, this.context!.start, this.context!.end);
+    }
 }
 
 const DEFAULT_SETTINGS: Partial<PermaPluginSettings> = {
@@ -62,11 +102,13 @@ class PermaTestModal extends Modal {
 	private answers: Map<number, { score: number; reflection: string }> = new Map();
 	private questions: string[];
 	private plugin: PermaPlugin;
+	private fileSuggest: FileSuggest;
 
 	constructor(app: App, plugin: PermaPlugin) {
 		super(app);
 		this.questions = questions;
 		this.plugin = plugin;
+		this.fileSuggest = new FileSuggest(plugin);
 	}
 
 	onOpen() {
@@ -115,24 +157,13 @@ class PermaTestModal extends Modal {
 			this.answers.set(this.currentQuestion, { ...currentAnswer, reflection: (event.target as HTMLTextAreaElement).value });
 		});
 
-		// Attempt to enable file suggest functionality
-		this.app.workspace.onLayoutReady(() => {
-			const fileManager = (this.app as any).fileManager;
-			console.log('FileManager:', fileManager);
-			if (fileManager && fileManager.suggester) {
-				console.log('Suggester method:', fileManager.suggester);
-				fileManager.suggester(commentTextarea, this.app.workspace.getActiveFile()?.path || '');
-			} else {
-				console.warn('File suggest functionality not available');
-			}
-		});
+		// Enable file suggest functionality
+		this.fileSuggest.attachEditor(commentTextarea);
 
-		// Add event listener for [[ to check if it triggers anything
+		// Update the answer when the textarea changes
 		commentTextarea.addEventListener('input', (event) => {
-			const textarea = event.target as HTMLTextAreaElement;
-			if (textarea.value.endsWith('[[')) {
-				console.log('Double square bracket detected');
-			}
+			const currentAnswer = this.answers.get(this.currentQuestion) ?? { score: 5, reflection: '' };
+			this.answers.set(this.currentQuestion, { ...currentAnswer, reflection: (event.target as HTMLTextAreaElement).value });
 		});
 
 		const navigationEl = contentEl.createEl('div', {cls: 'perma-navigation'});
