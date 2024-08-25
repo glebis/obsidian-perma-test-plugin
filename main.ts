@@ -81,7 +81,7 @@ export default class PermaPlugin extends Plugin {
 		// Add command to start the PERMA Profiler test
 		this.addCommand({
 			id: 'start-perma-test',
-			name: 'Start PERMA Profiler Test',
+			name: 'Start test',
 			callback: () => {
 				new PermaTestModal(this.app, this).open();
 			}
