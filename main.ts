@@ -10,6 +10,9 @@ interface PermaPluginSettings {
 
 class FileSuggest extends EditorSuggest<string> {
     plugin: PermaPlugin;
+    inputEl: HTMLTextAreaElement;
+    suggestEl: HTMLElement | null;
+    suggestions: string[] = [];
 
     constructor(plugin: PermaPlugin) {
         super(plugin.app);
@@ -120,6 +123,7 @@ class PermaTestModal extends Modal {
 		this.questions = questions;
 		this.plugin = plugin;
 		this.fileSuggest = new FileSuggest(plugin);
+		plugin.registerEditorSuggest(this.fileSuggest);
 	}
 
 	onOpen() {
@@ -178,7 +182,7 @@ class PermaTestModal extends Modal {
 		});
 
 		// Register the FileSuggest with the Editor
-		this.registerEditorSuggest(this.fileSuggest);
+		this.plugin.registerEditorSuggest(this.fileSuggest);
 
 		const navigationEl = contentEl.createEl('div', {cls: 'perma-navigation'});
 		
