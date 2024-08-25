@@ -1,5 +1,5 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, EditorSuggest, EditorPosition, EditorSuggestTriggerInfo, EditorSuggestContext } from 'obsidian';
-import { questions } from './questions_en';
+import { questions, Question } from './questions_en';
 
 interface PermaPluginSettings {
 	resultTemplate: string;
@@ -106,8 +106,8 @@ export default class PermaPlugin extends Plugin {
 
 class PermaTestModal extends Modal {
 	private currentQuestion: number = 0;
-	private answers: Map<number, { score: number; reflection: string }> = new Map();
-	private questions: string[];
+	private answers: Map<string, { score: number; reflection: string }> = new Map();
+	private questions: Question[];
 	private plugin: PermaPlugin;
 	private fileSuggest: FileSuggest;
 
@@ -134,19 +134,20 @@ class PermaTestModal extends Modal {
 		const {contentEl} = this;
 		contentEl.empty();
 
+		const question = this.questions[this.currentQuestion];
 		const questionEl = contentEl.createEl('div', {cls: 'perma-question'});
-		questionEl.createEl('p', {text: this.questions[this.currentQuestion]});
+		questionEl.createEl('p', {text: question.text});
 
 		new Setting(contentEl)
 			.setName('Your answer')
-			.setDesc('0 = Never, 10 = Always')
+			.setDesc(`${question.scale.minLabel} = ${question.scale.min}, ${question.scale.maxLabel} = ${question.scale.max}`)
 			.addSlider(slider => slider
-				.setLimits(0, 10, 1)
-				.setValue(this.answers.get(this.currentQuestion)?.score ?? 5)
+				.setLimits(question.scale.min, question.scale.max, 1)
+				.setValue(this.answers.get(question.id)?.score ?? (question.scale.max - question.scale.min) / 2)
 				.setDynamicTooltip()
 				.onChange(value => {
-					const currentAnswer = this.answers.get(this.currentQuestion) ?? { score: 5, reflection: '' };
-					this.answers.set(this.currentQuestion, { ...currentAnswer, score: value });
+					const currentAnswer = this.answers.get(question.id) ?? { score: (question.scale.max - question.scale.min) / 2, reflection: '' };
+					this.answers.set(question.id, { ...currentAnswer, score: value });
 				}));
 
 		// Add comment textarea with file suggest functionality
@@ -159,18 +160,15 @@ class PermaTestModal extends Modal {
 			attr: {rows: '4', cols: '50'}
 		});
 
-		commentTextarea.addEventListener('input', (event) => {
-			const currentAnswer = this.answers.get(this.currentQuestion) ?? { score: 5, reflection: '' };
-			this.answers.set(this.currentQuestion, { ...currentAnswer, reflection: (event.target as HTMLTextAreaElement).value });
-		});
+		commentTextarea.value = this.answers.get(question.id)?.reflection ?? '';
 
 		// Enable file suggest functionality
 		this.plugin.registerEditorSuggest(this.fileSuggest);
 
 		// Update the answer when the textarea changes
 		commentTextarea.addEventListener('input', (event) => {
-			const currentAnswer = this.answers.get(this.currentQuestion) ?? { score: 5, reflection: '' };
-			this.answers.set(this.currentQuestion, { ...currentAnswer, reflection: (event.target as HTMLTextAreaElement).value });
+			const currentAnswer = this.answers.get(question.id) ?? { score: (question.scale.max - question.scale.min) / 2, reflection: '' };
+			this.answers.set(question.id, { ...currentAnswer, reflection: (event.target as HTMLTextAreaElement).value });
 		});
 
 		const navigationEl = contentEl.createEl('div', {cls: 'perma-navigation'});
@@ -230,15 +228,29 @@ class PermaTestModal extends Modal {
 
 	private calculateScores() {
 		const categories = {
-			P: [0], E: [1], R: [2], M: [3], A: [4]
+			P: ['P1', 'P2', 'P3'],
+			E: ['E1', 'E2', 'E3'],
+			R: ['R1', 'R2', 'R3'],
+			M: ['M1', 'M2', 'M3'],
+			A: ['A1', 'A2', 'A3'],
+			N: ['N1', 'N2', 'N3'],
+			H: ['H1', 'H2', 'H3'],
 		};
 		
 		const scores: Record<string, number> = {};
 		
-		for (const [category, questionIndices] of Object.entries(categories)) {
-			const categoryScores = questionIndices.map(index => this.answers.get(index)?.score || 0);
+		for (const [category, questionIds] of Object.entries(categories)) {
+			const categoryScores = questionIds.map(id => this.answers.get(id)?.score || 0);
 			scores[category] = categoryScores.reduce((sum, score) => sum + score, 0) / categoryScores.length;
 		}
+		
+		// Calculate overall well-being (PERMA)
+		const permaQuestions = [...categories.P, ...categories.E, ...categories.R, ...categories.M, ...categories.A, 'hap'];
+		const permaScores = permaQuestions.map(id => this.answers.get(id)?.score || 0);
+		scores['PERMA'] = permaScores.reduce((sum, score) => sum + score, 0) / permaScores.length;
+		
+		// Add Loneliness score
+		scores['Lon'] = this.answers.get('Lon')?.score || 0;
 		
 		return scores;
 	}
@@ -300,10 +312,11 @@ class PermaTestModal extends Modal {
 		
 		// Add questions and reflections
 		let questionsAndReflections = '## Questions and Reflections\n\n';
-		this.answers.forEach((answer, index) => {
-			questionsAndReflections += `### Question ${index + 1}: ${this.questions[index]}\n`;
-			questionsAndReflections += `Score: ${answer.score}\n`;
-			if (answer.reflection) {
+		this.questions.forEach((question, index) => {
+			const answer = this.answers.get(question.id);
+			questionsAndReflections += `### Question ${index + 1}: ${question.text}\n`;
+			questionsAndReflections += `Score: ${answer?.score || 'Not answered'}\n`;
+			if (answer?.reflection) {
 				questionsAndReflections += `Reflection: ${answer.reflection}\n`;
 			}
 			questionsAndReflections += '\n';
@@ -320,7 +333,11 @@ class PermaTestModal extends Modal {
 			E: "Engagement",
 			R: "Relationships",
 			M: "Meaning",
-			A: "Accomplishment"
+			A: "Accomplishment",
+			N: "Negative Emotion",
+			H: "Health",
+			Lon: "Loneliness",
+			PERMA: "Overall Well-being"
 		};
 		return categories[key as keyof typeof categories] || key;
 	}
