@@ -46,6 +46,17 @@ class FileSuggest extends EditorSuggest<string> {
         const { editor } = this.context!;
         editor.replaceRange(`${value}]]`, this.context!.start, this.context!.end);
     }
+
+    attachEditor(editor: HTMLTextAreaElement): void {
+        this.inputEl = editor;
+        this.suggestEl = editor.parentElement?.createDiv('suggestion-container');
+        this.scope.register([], 'Enter', (evt: KeyboardEvent) => {
+            if (this.suggestions.length > 0) {
+                evt.preventDefault();
+                this.selectSuggestion(this.suggestions[0]);
+            }
+        });
+    }
 }
 
 const DEFAULT_SETTINGS: Partial<PermaPluginSettings> = {
@@ -165,6 +176,9 @@ class PermaTestModal extends Modal {
 			const currentAnswer = this.answers.get(this.currentQuestion) ?? { score: 5, reflection: '' };
 			this.answers.set(this.currentQuestion, { ...currentAnswer, reflection: (event.target as HTMLTextAreaElement).value });
 		});
+
+		// Register the FileSuggest with the Editor
+		this.registerEditorSuggest(this.fileSuggest);
 
 		const navigationEl = contentEl.createEl('div', {cls: 'perma-navigation'});
 		
