@@ -138,17 +138,21 @@ class PermaTestModal extends Modal {
 		const questionEl = contentEl.createEl('div', {cls: 'perma-question'});
 		questionEl.createEl('p', {text: question.text});
 
-		new Setting(contentEl)
-			.setName('Your answer')
-			.setDesc(`${question.scale.minLabel} = ${question.scale.min}, ${question.scale.maxLabel} = ${question.scale.max}`)
-			.addSlider(slider => slider
-				.setLimits(question.scale.min, question.scale.max, 1)
-				.setValue(this.answers.get(question.id)?.score ?? (question.scale.max - question.scale.min) / 2)
-				.setDynamicTooltip()
-				.onChange(value => {
-					const currentAnswer = this.answers.get(question.id) ?? { score: (question.scale.max - question.scale.min) / 2, reflection: '' };
-					this.answers.set(question.id, { ...currentAnswer, score: value });
-				}));
+		const answerContainer = contentEl.createEl('div', {cls: 'perma-answer-container'});
+		answerContainer.createEl('div', {text: `${question.scale.minLabel} = 0, ${question.scale.maxLabel} = 10`, cls: 'perma-answer-description'});
+		
+		const buttonContainer = answerContainer.createEl('div', {cls: 'perma-button-container'});
+		for (let i = 0; i <= 10; i++) {
+			const button = buttonContainer.createEl('button', {text: i.toString(), cls: 'perma-answer-button'});
+			if (this.answers.get(question.id)?.score === i) {
+				button.addClass('perma-answer-button-selected');
+			}
+			button.onclick = () => {
+				const currentAnswer = this.answers.get(question.id) ?? { score: 5, reflection: '' };
+				this.answers.set(question.id, { ...currentAnswer, score: i });
+				this.displayQuestion(); // Refresh the question display to update button states
+			};
+		}
 
 		// Add comment textarea with file suggest functionality
 		const commentSetting = new Setting(contentEl)

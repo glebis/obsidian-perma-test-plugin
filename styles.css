@@ -27,3 +27,38 @@
 .perma-profiler-ribbon-class {
     color: var(--text-accent);
 }
+.perma-answer-container {
+    margin-bottom: 20px;
+}
+
+.perma-answer-description {
+    margin-bottom: 10px;
+    font-style: italic;
+}
+
+.perma-button-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.perma-answer-button {
+    flex: 1 0 9%;
+    margin: 2px;
+    padding: 10px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background-color: var(--background-secondary);
+    color: var(--text-normal);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.perma-answer-button:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.perma-answer-button-selected {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
