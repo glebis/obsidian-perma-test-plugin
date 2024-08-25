@@ -59,7 +59,7 @@ export default class PermaPlugin extends Plugin {
 
 class PermaTestModal extends Modal {
 	private currentQuestion: number = 0;
-	private answers: Map<number, number> = new Map();
+	private answers: Map<number, { score: number; reflection: string }> = new Map();
 	private questions: string[];
 	private plugin: PermaPlugin;
 
@@ -96,7 +96,8 @@ class PermaTestModal extends Modal {
 				.setValue(this.answers.get(this.currentQuestion) || 5)
 				.setDynamicTooltip()
 				.onChange(value => {
-					this.answers.set(this.currentQuestion, value);
+					const currentAnswer = this.answers.get(this.currentQuestion) || { score: 5, reflection: '' };
+					this.answers.set(this.currentQuestion, { ...currentAnswer, score: value });
 				}));
 
 		// Add comment textarea with file suggest functionality
@@ -109,11 +110,28 @@ class PermaTestModal extends Modal {
 			attr: {rows: '4', cols: '50'}
 		});
 
-		// Enable file suggest functionality
+		commentTextarea.addEventListener('input', (event) => {
+			const currentAnswer = this.answers.get(this.currentQuestion) || { score: 5, reflection: '' };
+			this.answers.set(this.currentQuestion, { ...currentAnswer, reflection: (event.target as HTMLTextAreaElement).value });
+		});
+
+		// Attempt to enable file suggest functionality
 		this.app.workspace.onLayoutReady(() => {
 			const fileManager = (this.app as any).fileManager;
+			console.log('FileManager:', fileManager);
 			if (fileManager && fileManager.suggester) {
+				console.log('Suggester method:', fileManager.suggester);
 				fileManager.suggester(commentTextarea, this.app.workspace.getActiveFile()?.path || '');
+			} else {
+				console.warn('File suggest functionality not available');
+			}
+		});
+
+		// Add event listener for [[ to check if it triggers anything
+		commentTextarea.addEventListener('input', (event) => {
+			const textarea = event.target as HTMLTextAreaElement;
+			if (textarea.value.endsWith('[[')) {
+				console.log('Double square bracket detected');
 			}
 		});
 
@@ -190,8 +208,18 @@ class PermaTestModal extends Modal {
 			content = content.replace(`{{score_${key}}}`, value.toString());
 		}
 		
-		// TODO: Generate interpretations
+		// Generate interpretations (placeholder)
 		content = content.replace('{{interpretations}}', 'Interpretations to be implemented.');
+		
+		// Add questions and reflections
+		let questionsAndReflections = '## Questions and Reflections\n\n';
+		this.answers.forEach((answer, index) => {
+			questionsAndReflections += `### Question ${index + 1}: ${this.questions[index]}\n`;
+			questionsAndReflections += `Score: ${answer.score}\n`;
+			questionsAndReflections += `Reflection: ${answer.reflection || 'No reflection provided'}\n\n`;
+		});
+		
+		content += '\n\n' + questionsAndReflections;
 		
 		return content;
 	}
