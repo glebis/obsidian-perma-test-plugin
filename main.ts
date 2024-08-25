@@ -349,11 +349,19 @@ class PermaTestModal extends Modal {
 		
 		content = content.replace('{{interpretations}}', scoresTable);
 		
+		// Add reflection questions
+		let reflectionQuestions = '## Reflection Questions\n\n';
+		reflectionQuestions += '- What aspects of your well-being are you most satisfied with based on these results?\n';
+		reflectionQuestions += '- Which areas do you feel you could improve upon, and what specific actions might help?\n';
+		reflectionQuestions += '- How do these results align with your personal goals and values?\n\n';
+		
+		content = content.replace('[Your overall reflection on the PERMA test results goes here]', reflectionQuestions);
+		
 		// Add questions and reflections
 		let questionsAndReflections = '## Questions and Reflections\n\n';
 		this.questions.forEach((question, index) => {
 			const answer = this.answers.get(question.id);
-			questionsAndReflections += `### Question ${index + 1}: ${question.text}\n`;
+			questionsAndReflections += `### ${question.text}\n`;
 			questionsAndReflections += `Score: ${answer?.score || 'Not answered'}\n`;
 			if (answer?.reflection) {
 				questionsAndReflections += `Reflection: ${answer.reflection}\n`;
