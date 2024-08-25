@@ -111,8 +111,9 @@ class PermaTestModal extends Modal {
 
 		// Enable file suggest functionality
 		this.app.workspace.onLayoutReady(() => {
-			if (this.app.fileManager) {
-				this.app.fileManager.processFrontMatter(commentTextarea, this.app.vault.getRoot());
+			const fileManager = (this.app as any).fileManager;
+			if (fileManager && fileManager.suggester) {
+				fileManager.suggester(commentTextarea, this.app.workspace.getActiveFile()?.path || '');
 			}
 		});
 
