@@ -99,16 +99,40 @@ class PermaTestModal extends Modal {
 					this.answers.set(this.currentQuestion, value);
 				}));
 
+		// Add comment textarea with file suggest functionality
+		const commentSetting = new Setting(contentEl)
+			.setName('Reflections')
+			.setDesc('Add any thoughts or reflections on this question');
+
+		const commentTextarea = commentSetting.controlEl.createEl('textarea', {
+			cls: 'perma-comment',
+			attr: {rows: '4', cols: '50'}
+		});
+
+		// Enable file suggest functionality
+		this.app.workspace.onLayoutReady(() => {
+			const fileSuggest = this.app.workspace.internalPlugins.getPluginById('file-suggester');
+			if (fileSuggest) {
+				fileSuggest.instance.registerTextElement(commentTextarea);
+			}
+		});
+
 		const navigationEl = contentEl.createEl('div', {cls: 'perma-navigation'});
 		
+		// Always create a left-side button container
+		const leftButtonContainer = navigationEl.createEl('div');
+		
+		// Always create a right-side button container
+		const rightButtonContainer = navigationEl.createEl('div');
+
 		if (this.currentQuestion > 0) {
-			navigationEl.createEl('button', {text: 'Previous'}).onclick = () => this.previousQuestion();
+			leftButtonContainer.createEl('button', {text: 'Previous'}).onclick = () => this.previousQuestion();
 		}
 		
 		if (this.currentQuestion < this.questions.length - 1) {
-			navigationEl.createEl('button', {text: 'Next'}).onclick = () => this.nextQuestion();
+			rightButtonContainer.createEl('button', {text: 'Next'}).onclick = () => this.nextQuestion();
 		} else {
-			navigationEl.createEl('button', {text: 'Finish'}).onclick = () => this.finishTest();
+			rightButtonContainer.createEl('button', {text: 'Finish'}).onclick = () => this.finishTest();
 		}
 
 		contentEl.createEl('div', {cls: 'perma-progress', text: `Question ${this.currentQuestion + 1} of ${this.questions.length}`});
