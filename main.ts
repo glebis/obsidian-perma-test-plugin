@@ -56,7 +56,7 @@ class FileSuggest extends EditorSuggest<TFile> {
 }
 
 const DEFAULT_SETTINGS: Partial<PermaPluginSettings> = {
-	resultTemplate: '# PERMA Profiler Results\n\nDate: {{date}}\n\n## Scores and Interpretations\n\n{{interpretations}}\n\n## Overall Reflection\n\n[Your overall reflection on the PERMA test results goes here]',
+	resultTemplate: '# PERMA Profiler Results\n\nDate: {{date}}\n\n## Scores and Interpretations\n\n{{interpretations}}\n\n## Overall Reflection\n\n[Your overall reflection on the PERMA test results goes here]\n\n#perma-profiler-test',
 	fileNamingConvention: 'PERMA-Results-{{date}}',
 	defaultSaveLocation: '/',
 	showRibbonIcon: true
@@ -101,6 +101,89 @@ export default class PermaPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	resetTemplateToDefault() {
+		this.settings.resultTemplate = DEFAULT_SETTINGS.resultTemplate as string;
+		this.saveSettings();
+	}
+
+	generateInterpretation(category: string, score: number): string {
+		const level = this.interpretScore(score);
+		const interpretations: Record<string, Record<string, string>> = {
+			P: {
+				Low: "You may benefit from activities that boost positive emotions.",
+				Moderate: "You experience positive emotions, but there's room for improvement.",
+				High: "You frequently experience positive emotions and joy in your life."
+			},
+			E: {
+				Low: "Consider finding more engaging activities in your daily life.",
+				Moderate: "You feel engaged at times, but could seek more flow experiences.",
+				High: "You often feel deeply engaged and absorbed in your activities."
+			},
+			R: {
+				Low: "You might want to focus on building stronger relationships.",
+				Moderate: "You have some good relationships, but could work on deepening connections.",
+				High: "You have strong, supportive relationships in your life."
+			},
+			M: {
+				Low: "Reflect on what gives your life purpose and meaning.",
+				Moderate: "You have some sense of meaning, but could explore this further.",
+				High: "You have a strong sense of purpose and meaning in your life."
+			},
+			A: {
+				Low: "Set achievable goals to increase your sense of accomplishment.",
+				Moderate: "You're making progress, but could set more challenging goals.",
+				High: "You frequently feel a sense of accomplishment and achievement."
+			},
+			N: {
+				Low: "You experience low levels of negative emotions, which is generally good.",
+				Moderate: "You experience moderate levels of negative emotions.",
+				High: "You might want to find ways to reduce negative emotions in your life."
+			},
+			H: {
+				Low: "Consider focusing on improving your overall health.",
+				Moderate: "Your health is average, but there's room for improvement.",
+				High: "You're in good health compared to others your age and gender."
+			},
+			Lon: {
+				Low: "You don't often feel lonely, which is positive.",
+				Moderate: "You sometimes feel lonely, which is common.",
+				High: "You might benefit from seeking more social connections."
+			},
+			PERMA: {
+				Low: "Your overall well-being could use some improvement.",
+				Moderate: "Your overall well-being is average, with room for growth.",
+				High: "You have a high level of overall well-being."
+			}
+		};
+
+		if (interpretations[category] && interpretations[category][level]) {
+			return interpretations[category][level];
+		} else {
+			return `Your score for ${this.getCategoryFullName(category)} is in the ${level} range.`;
+		}
+	}
+
+	private interpretScore(score: number): string {
+		if (score < 3.33) return "Low";
+		if (score < 6.67) return "Moderate";
+		return "High";
+	}
+
+	private getCategoryFullName(key: string): string {
+		const categories = {
+			P: "Positive Emotion",
+			E: "Engagement",
+			R: "Relationships",
+			M: "Meaning",
+			A: "Accomplishment",
+			N: "Negative Emotion",
+			H: "Health",
+			Lon: "Loneliness",
+			PERMA: "Overall Well-being"
+		};
+		return categories[key as keyof typeof categories] || key;
 	}
 }
 
@@ -397,60 +480,7 @@ class PermaTestModal extends Modal {
 	}
 
 	private generateInterpretation(category: string, score: number): string {
-		const level = this.interpretScore(score);
-		const interpretations: Record<string, Record<string, string>> = {
-			P: {
-				Low: "You may benefit from activities that boost positive emotions.",
-				Moderate: "You experience positive emotions, but there's room for improvement.",
-				High: "You frequently experience positive emotions and joy in your life."
-			},
-			E: {
-				Low: "Consider finding more engaging activities in your daily life.",
-				Moderate: "You feel engaged at times, but could seek more flow experiences.",
-				High: "You often feel deeply engaged and absorbed in your activities."
-			},
-			R: {
-				Low: "You might want to focus on building stronger relationships.",
-				Moderate: "You have some good relationships, but could work on deepening connections.",
-				High: "You have strong, supportive relationships in your life."
-			},
-			M: {
-				Low: "Reflect on what gives your life purpose and meaning.",
-				Moderate: "You have some sense of meaning, but could explore this further.",
-				High: "You have a strong sense of purpose and meaning in your life."
-			},
-			A: {
-				Low: "Set achievable goals to increase your sense of accomplishment.",
-				Moderate: "You're making progress, but could set more challenging goals.",
-				High: "You frequently feel a sense of accomplishment and achievement."
-			},
-			N: {
-				Low: "You experience low levels of negative emotions, which is generally good.",
-				Moderate: "You experience moderate levels of negative emotions.",
-				High: "You might want to find ways to reduce negative emotions in your life."
-			},
-			H: {
-				Low: "Consider focusing on improving your overall health.",
-				Moderate: "Your health is average, but there's room for improvement.",
-				High: "You're in good health compared to others your age and gender."
-			},
-			Lon: {
-				Low: "You don't often feel lonely, which is positive.",
-				Moderate: "You sometimes feel lonely, which is common.",
-				High: "You might benefit from seeking more social connections."
-			},
-			PERMA: {
-				Low: "Your overall well-being could use some improvement.",
-				Moderate: "Your overall well-being is average, with room for growth.",
-				High: "You have a high level of overall well-being."
-			}
-		};
-
-		if (interpretations[category] && interpretations[category][level]) {
-			return interpretations[category][level];
-		} else {
-			return `Your score for ${this.getCategoryFullName(category)} is in the ${level} range.`;
-		}
+		return this.plugin.generateInterpretation(category, score);
 	}
 
 	private generateResultContent(scores: Record<string, number>) {
