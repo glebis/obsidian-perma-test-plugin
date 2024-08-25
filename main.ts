@@ -204,10 +204,10 @@ class PermaTestModal extends Modal {
 	}
 }
 
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+class PermaSettingTab extends PluginSettingTab {
+	plugin: PermaPlugin;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: PermaPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -217,14 +217,48 @@ class SampleSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
+		containerEl.createEl('h2', {text: 'PERMA Profiler Settings'});
+
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+			.setName('Result Template')
+			.setDesc('Template for generating result notes')
+			.addTextArea(text => text
+				.setPlaceholder('Enter your template')
+				.setValue(this.plugin.settings.resultTemplate)
 				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.resultTemplate = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('File Naming Convention')
+			.setDesc('Convention for naming result files')
+			.addText(text => text
+				.setPlaceholder('Enter file naming convention')
+				.setValue(this.plugin.settings.fileNamingConvention)
+				.onChange(async (value) => {
+					this.plugin.settings.fileNamingConvention = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Default Save Location')
+			.setDesc('Default location to save result notes')
+			.addText(text => text
+				.setPlaceholder('Enter default save location')
+				.setValue(this.plugin.settings.defaultSaveLocation)
+				.onChange(async (value) => {
+					this.plugin.settings.defaultSaveLocation = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Show Ribbon Icon')
+			.setDesc('Toggle visibility of the ribbon icon')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showRibbonIcon)
+				.onChange(async (value) => {
+					this.plugin.settings.showRibbonIcon = value;
 					await this.plugin.saveSettings();
 				}));
 	}
