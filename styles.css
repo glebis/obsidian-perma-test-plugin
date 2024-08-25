@@ -2,10 +2,19 @@
     margin-bottom: 20px;
 }
 
+.perma-question h1 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+}
+
 .perma-navigation {
     display: flex;
     justify-content: space-between;
     margin-top: 20px;
+}
+
+.perma-reflections-content {
+    margin-top: 10px;
 }
 
 .perma-comment {
@@ -43,15 +52,16 @@
 }
 
 .perma-answer-button {
-    flex: 1 0 9%;
-    margin: 2px;
-    padding: 10px;
+    flex: 1 0 8%;
+    margin: 1px;
+    padding: 8px 5px;
     border: 1px solid var(--background-modifier-border);
     border-radius: 4px;
     background-color: var(--background-secondary);
     color: var(--text-normal);
     cursor: pointer;
     transition: background-color 0.2s ease;
+    font-size: 0.9em;
 }
 
 .perma-answer-button:hover {

@@ -136,7 +136,7 @@ class PermaTestModal extends Modal {
 
 		const question = this.questions[this.currentQuestion];
 		const questionEl = contentEl.createEl('div', {cls: 'perma-question'});
-		questionEl.createEl('p', {text: question.text});
+		questionEl.createEl('h1', {text: question.text});
 
 		const answerContainer = contentEl.createEl('div', {cls: 'perma-answer-container'});
 		answerContainer.createEl('div', {text: `${question.scale.minLabel} = 0, ${question.scale.maxLabel} = 10`, cls: 'perma-answer-description'});
@@ -154,12 +154,21 @@ class PermaTestModal extends Modal {
 			};
 		}
 
-		// Add comment textarea with file suggest functionality
-		const commentSetting = new Setting(contentEl)
+		// Add collapsible reflections section
+		const reflectionsSetting = new Setting(contentEl)
 			.setName('Reflections')
-			.setDesc('Add any thoughts or reflections on this question');
+			.setDesc('Add any thoughts or reflections on this question')
+			.addToggle(toggle => toggle
+				.setValue(false)
+				.onChange(value => {
+					reflectionsContent.style.display = value ? 'block' : 'none';
+				})
+			);
 
-		const commentTextarea = commentSetting.controlEl.createEl('textarea', {
+		const reflectionsContent = contentEl.createEl('div', {cls: 'perma-reflections-content'});
+		reflectionsContent.style.display = 'none';
+
+		const commentTextarea = reflectionsContent.createEl('textarea', {
 			cls: 'perma-comment',
 			attr: {rows: '4', cols: '50'}
 		});
