@@ -144,11 +144,12 @@ class PermaTestModal extends Modal {
 		const buttonContainer = answerContainer.createEl('div', {cls: 'perma-button-container'});
 		for (let i = 0; i <= 10; i++) {
 			const button = buttonContainer.createEl('button', {text: i.toString(), cls: 'perma-answer-button'});
-			if (this.answers.get(question.id)?.score === i) {
+			const currentScore = this.answers.get(question.id)?.score;
+			if ((currentScore === undefined && i === 0) || currentScore === i) {
 				button.addClass('perma-answer-button-selected');
 			}
 			button.onclick = () => {
-				const currentAnswer = this.answers.get(question.id) ?? { score: 5, reflection: '' };
+				const currentAnswer = this.answers.get(question.id) ?? { score: 0, reflection: '' };
 				this.answers.set(question.id, { ...currentAnswer, score: i });
 				this.displayQuestion(); // Refresh the question display to update button states
 			};
