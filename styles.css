@@ -62,7 +62,7 @@
 
 /* Start Test button styling */
 .perma-start-test-button {
-    background-color: #4285f4; /* Google Blue */
+    background-color: #4285f4 !important; /* Google Blue */
     color: white;
     padding: 10px 20px;
     border: none;
@@ -117,16 +117,7 @@
     color: white !important;
 }
 
-/* Ensure button 10 doesn't become red */
-.perma-answer-button:last-child {
-    background-color: var(--background-secondary);
-    color: var(--text-normal);
-}
 
-.perma-answer-button:last-child.perma-answer-button-selected {
-    background-color: #4285f4 !important; /* Google Blue */
-    color: white !important;
-}
 
 .perma-button-container {
     display: flex;
@@ -135,9 +126,9 @@
 }
 
 .perma-button-container button {
-    padding: 10px 20px;
+    padding: 10px 10px;
     border: none;
-    border-radius: 4px;
+    border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
@@ -147,10 +138,6 @@
     color: var(--text-normal);
 }
 
-.perma-button-container button:last-child {
-    background-color: var(--interactive-accent);
-    color: var(--text-on-accent);
-}
 
 .perma-button-container button:hover {
     opacity: 0.8;

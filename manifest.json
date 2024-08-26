@@ -1,10 +1,10 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
+	"id": "perma-profiler-test",
+	"name": "PERMA Profiler Test",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
+	"description": "Take the PERMA (Positive Emotion, Engagement, Relationships, Meaning, Accomplishment) Profiler test within Obsidian vault. It automatically generates a note with results and interpretations, integrating seamlessly with the user's knowledge management workflow.",
+	"author": "Gleb Kalinin",
 	"authorUrl": "https://obsidian.md",
 	"fundingUrl": "https://obsidian.md/pricing",
 	"isDesktopOnly": false

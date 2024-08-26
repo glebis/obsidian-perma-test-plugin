@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-perma-test",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "The PERMA Profiler Obsidian plugin allows users to take the PERMA (Positive Emotion, Engagement, Relationships, Meaning, Accomplishment) Profiler test within their Obsidian vault. It automatically generates a note with results and interpretations, integrating seamlessly with the user's knowledge management workflow.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
