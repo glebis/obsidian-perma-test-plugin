@@ -5,7 +5,7 @@
 	"minAppVersion": "0.15.0",
 	"description": "Take the PERMA (Positive Emotion, Engagement, Relationships, Meaning, Accomplishment) Profiler test within Obsidian vault. It automatically generates a note with results and interpretations, integrating seamlessly with the user's knowledge management workflow.",
 	"author": "Gleb Kalinin",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"authorUrl": "https://glebkalinin.de/",
+	"fundingUrl": "https://ko-fi.com/kalinin",
 	"isDesktopOnly": false
 }
